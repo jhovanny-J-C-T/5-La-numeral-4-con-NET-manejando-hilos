@@ -1,27 +1,34 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 
 class Program
 {
     static void Main()
     {
+        // Definir la cantidad de números en la serie
         const int cantidadNumeros = 100000;
-        int[] numeros = new int[cantidadNumeros];
-        int[] resultados = new int[cantidadNumeros];
-        Thread[] hilos = new Thread[cantidadNumeros];
 
+        // Arreglos para almacenar los números y los resultados
+        int[] numeros = new int[cantidadNumeros];
+        List<int> resultados = new List<int>();
+
+        // Inicializar la lista de resultados con ceros
         for (int i = 0; i < cantidadNumeros; i++)
         {
-            numeros[i] = i + 1;
-            hilos[i] = new Thread(new ParameterizedThreadStart(CalcularNumero));
-            hilos[i].Start(new object[] { i, numeros[i], resultados });
+            resultados.Add(0);
         }
 
-        // Esperar a que todos los hilos terminen
-        foreach (var hilo in hilos)
+        // Crear y ejecutar tareas en paralelo utilizando Parallel.For
+        Parallel.For(0, cantidadNumeros, i =>
         {
-            hilo.Join();
-        }
+            // Asignar valores a los números
+            numeros[i] = i + 1;
+            
+            // Calcular y almacenar el resultado para cada número
+            CalcularNumero(i, numeros[i], resultados);
+        });
 
         // Mostrar toda la serie
         Console.WriteLine("Serie generada con 100000 posiciones:");
@@ -35,15 +42,15 @@ class Program
         }
 
         Console.WriteLine();
+
+        // Esperar la entrada del usuario antes de cerrar la consola
+        Console.WriteLine("\nPresiona Enter para salir...");
+        Console.ReadLine();
     }
 
-    static void CalcularNumero(object state)
+    // Método para calcular y asignar el resultado según si el número es par o impar
+    static void CalcularNumero(int index, int numero, List<int> resultados)
     {
-        object[] parameters = (object[])state;
-        int index = (int)parameters[0];
-        int numero = (int)parameters[1];
-        int[] resultados = (int[])parameters[2];
-
         resultados[index] = (numero % 2 == 0) ? numero * 2 : numero * 2 + 1;
     }
 }
